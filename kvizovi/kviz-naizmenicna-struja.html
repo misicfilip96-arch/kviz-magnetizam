@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Квиз: Наизменична струја</title>
+
+<script>
+  MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+  :root{
+    --bg1:#1e1b4b; --bg2:#6d28d9; --card:#0b1020e6;
+    --accent:#a78bfa; --accent-2:#60a5fa;
+    --good-bg:#0f2d1c; --good-br:#14532d;
+    --bad-bg:#2a0f10; --bad-br:#5b1111;
+    --text:#f8fafc; --muted:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  html,body{min-height:100%}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, sans-serif;
+    color: var(--text, #f8fafc);
+    background: radial-gradient(1200px 600px at 20% 0%, var(--bg2, #6d28d9), transparent 60%),
+                radial-gradient(1000px 800px at 90% 10%, #7c3aed, transparent 60%),
+                linear-gradient(160deg, var(--bg1, #1e1b4b), #111827 60%);
+    background-attachment: fixed;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 24px; }
+  header{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 16px; }
+  .title{ font-size: clamp(20px, 2.6vw, 34px); font-weight: 800; letter-spacing: .5px; }
+  .badge{
+    padding: 6px 10px; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-2, #60a5fa), var(--accent, #a78bfa));
+    color:#0b1020; font-weight:700; font-size: 13px;
+    box-shadow: 0 10px 30px #00000055, inset 0 1px 0 #ffffff66;
+  }
+  .card{
+    background: var(--card, #0b1020e6);
+    border:1px solid #2e2f55;
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 10px 30px #00000055;
+    margin-bottom: 14px;
+  }
+  .q-h{ font-weight: 700; font-size: 18px; margin: 0 0 10px 0; color:#e5e7eb; }
+  .options{ display:grid; gap:10px }
+  label.opt{
+    display:flex; gap:10px; align-items:flex-start;
+    padding: 12px 14px;
+    border:1px solid #2e2f55;
+    border-radius: 12px;
+    background: #141633;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  label.opt:hover{ transform: translateY(-1px); border-color:#4f46e5; background:#171a3a; }
+  .opt input{ margin-top: 3px; }
+  .opt-text{ line-height:1.45 }
+  .muted{ color:var(--muted, #cbd5e1); font-size:14px }
+  .controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-top:18px }
+  button{
+    appearance:none; border:none; cursor:pointer;
+    padding:12px 16px; border-radius:12px; font-weight:800; letter-spacing:.3px;
+    background: linear-gradient(90deg, var(--accent-2, #60a5fa), var(--accent, #a78bfa));
+    color:#0b1020; box-shadow: 0 10px 30px #00000055, inset 0 1px 0 #ffffff66;
+  }
+  button.secondary{ background:#0b1020; color:var(--text, #f8fafc); border:1px solid #2e2f55; box-shadow:none }
+  .score{ font-weight:800; font-size: 18px; }
+  .correct{ border-color: var(--good-br, #14532d) !important; background: var(--good-bg, #0f2d1c) !important; }
+  .wrong{ border-color: var(--bad-br, #5b1111) !important; background: var(--bad-bg, #2a0f10) !important; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">Квиз: Наизменична струја</div>
+      <div class="badge" id="progress">Учитавање…</div>
+    </header>
+
+    <noscript>
+      <div class="card" style="border-color:#7a1c1c;background:#3b0a0a;color:#fff1f2;">
+        На овом приказу JavaScript је искључен (нпр. iOS „Quick Look“). Отвори страницу у Safari-ју.
+      </div>
+    </noscript>
+
+    <div id="quiz"></div>
+
+    <div class="card controls">
+      <div class="score" id="score">Резултат: —</div>
+      <div style="display:flex;gap:10px">
+        <button id="submitBtn">ПРЕДАЈ КВИЗ</button>
+        <button id="retryBtn" class="secondary">ПРОБАЈ ПОНОВО</button>
+      </div>
+    </div>
+
+    <footer class="muted" style="text-align:center;margin-top:18px;">Квиз је припрема за тест. Уради више пута.</footer>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var ALL = [{"type": "mc", "q": "Наизменична струја је струја чија се:", "opts": ["само јачина мења, смер је сталан", "само смер мења, јачина је стална", "и јачина и смер периодично мењају", "ни јачина ни смер не мењају"], "correct": 2, "shuffle_opts": false}, {"type": "mc", "q": "Наизменична струја у пракси најчешће се добија помоћу:", "opts": ["термоелектричних извора", "индукционих генератора", "електролизе", "фотоћелија"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Индукциони генератор се састоји од:", "opts": ["аноде и катоде", "ротора и статора", "калема и кондензатора", "осигурача и прекидача"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Тренутна вредност напона наизменичне струје најчешће је дата као:", "opts": ["$u=U_0\\cos\\omega t$", "$u=U_0\\sin\\omega t$", "$u=U_0\\omega t$", "$u=U_0/t$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Шта представља $U_0$ у једначини $u=U_0\\sin\\omega t$?", "opts": ["ефективну вредност напона", "амплитуду (максималну вредност) напона", "средњу вредност напона", "фреквенцију напона"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Тренутна вредност јачине AC струје може бити:", "opts": ["$i=I_0\\sin\\omega t$", "$i=I_0\\omega t$", "$i=I_0/t$", "$i=I_0\\sin t$"], "correct": 0, "shuffle_opts": false}, {"type": "mc", "q": "Кружна (угаона) фреквенција је:", "opts": ["$\\omega=2\\pi f$", "$\\omega=f/2\\pi$", "$\\omega=1/f$", "$\\omega=\\pi/f$"], "correct": 0, "shuffle_opts": false}, {"type": "mc", "q": "Ефективна вредност струје је:", "opts": ["$I_{ef}=I_0\\sqrt{2}$", "$I_{ef}=I_0/\\sqrt{2}$", "$I_{ef}=I_0/2$", "$I_{ef}=2I_0$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Ефективна вредност напона је:", "opts": ["$U_{ef}=U_0\\sqrt{2}$", "$U_{ef}=U_0/\\sqrt{2}$", "$U_{ef}=U_0/2$", "$U_{ef}=2U_0$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Термогени отпорник у AC колу доводи до тога да су струја и напон:", "opts": ["у фази", "у антифази", "померани за $\\pi/2$", "померани за $\\pi$"], "correct": 0, "shuffle_opts": false}, {"type": "mc", "q": "Индуктивна отпорност калема је:", "opts": ["$X_L=\\omega C$", "$X_L=L\\omega$", "$X_L=1/(L\\omega)$", "$X_L=R\\omega$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Капацитивна отпорност кондензатора је:", "opts": ["$X_C=L\\omega$", "$X_C=1/(C\\omega)$", "$X_C=C\\omega$", "$X_C=R/C$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "У чисто индуктивном колу, струја у односу на напон:", "opts": ["касни за $\\pi/2$", "предњачи за $\\pi/2$", "у фази је", "касни за $\\pi$"], "correct": 0, "shuffle_opts": false}, {"type": "mc", "q": "У чисто капацитивном колу, напон у односу на струју:", "opts": ["предњачи за $\\pi/2$", "касни за $\\pi/2$", "у фази је", "касни за $\\pi$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Фактор снаге је:", "opts": ["$\\cos\\varphi=Z/R$", "$\\cos\\varphi=R/Z$", "$\\cos\\varphi=U/I$", "$\\cos\\varphi=I/U$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Активна снага у општем случају износи:", "opts": ["$P=U_{ef}I_{ef}$", "$P=U_{ef}I_{ef}\\cos\\varphi$", "$P=U_{ef}I_{ef}\\sin\\varphi$", "$P=U_0I_0$"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Реактивна снага износи:", "opts": ["$Q=U_{ef}I_{ef}\\sin\\varphi$", "$Q=U_{ef}I_{ef}\\cos\\varphi$", "$Q=U_{ef}I_{ef}$", "$Q=U_0I_0$"], "correct": 0, "shuffle_opts": false}, {"type": "mc", "q": "Трансформатор служи за:", "opts": ["производњу једносмерне струје", "промену напона и јачине AC струје", "промену отпорности проводника", "мерење наелектрисања"], "correct": 1, "shuffle_opts": false}, {"type": "mc", "q": "Губици у далеководима су описани (Џул-Ленцов закон):", "opts": ["$Q=IRt$", "$Q=I^2Rt$", "$Q=UIt$", "$Q=\\rho\,l/S$"], "correct": 1, "shuffle_opts": false}, {"type": "tf", "q": "Наизменична струја периодично мења и смер и јачину.", "correct": true}, {"type": "tf", "q": "За синусоидалну струју важи $I_{ef}=I_0\\sqrt{2}$.", "correct": false}, {"type": "tf", "q": "У чисто индуктивном колу струја касни за напоном за $\\pi/2$.", "correct": true}, {"type": "tf", "q": "У чисто капацитивном колу струја касни за напоном за $\\pi/2$.", "correct": false}, {"type": "tf", "q": "Смањењем јачине струје у далеководима смањују се губици (загревање).", "correct": true}, {"type": "mc", "q": "Повежи величину са формулом:<br><span class='muted'>Повежи:</span> <b>Ефективна вредност напона</b>", "opts": ["$U_{ef}=U_0/\\sqrt{2}$", "$X_L=L\\omega$", "$X_C=1/(C\\omega)$", "$P=U_{ef}I_{ef}\\cos\\varphi$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи величину са формулом:<br><span class='muted'>Повежи:</span> <b>Индуктивна отпорност</b>", "opts": ["$X_L=L\\omega$", "$U_{ef}=U_0/\\sqrt{2}$", "$X_C=1/(C\\omega)$", "$P=U_{ef}I_{ef}\\cos\\varphi$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи величину са формулом:<br><span class='muted'>Повежи:</span> <b>Капацитивна отпорност</b>", "opts": ["$X_C=1/(C\\omega)$", "$U_{ef}=U_0/\\sqrt{2}$", "$X_L=L\\omega$", "$P=U_{ef}I_{ef}\\cos\\varphi$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи величину са формулом:<br><span class='muted'>Повежи:</span> <b>Активна снага</b>", "opts": ["$P=U_{ef}I_{ef}\\cos\\varphi$", "$U_{ef}=U_0/\\sqrt{2}$", "$X_L=L\\omega$", "$X_C=1/(C\\omega)$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи величину са формулом:<br><span class='muted'>Повежи:</span> <b>Џул-Ленцов закон (губици)</b>", "opts": ["$Q=I^2Rt$", "$U_{ef}=U_0/\\sqrt{2}$", "$X_L=L\\omega$", "$X_C=1/(C\\omega)$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи елемент и фазни однос:<br><span class='muted'>Повежи:</span> <b>Термогени отпорник (R)</b>", "opts": ["Струја и напон у фази", "Струја касни за напоном $\\pi/2$", "Напон касни за струјом $\\pi/2$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи елемент и фазни однос:<br><span class='muted'>Повежи:</span> <b>Калем (L)</b>", "opts": ["Струја касни за напоном $\\pi/2$", "Струја и напон у фази", "Напон касни за струјом $\\pi/2$"], "correct": 0, "shuffle_opts": true}, {"type": "mc", "q": "Повежи елемент и фазни однос:<br><span class='muted'>Повежи:</span> <b>Кондензатор (C)</b>", "opts": ["Напон касни за струјом $\\pi/2$", "Струја и напон у фази", "Струја касни за напоном $\\pi/2$"], "correct": 0, "shuffle_opts": true}];
+
+  var MAX_PER_RUN = 12; // број питања по покушају
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i=a.length-1; i>0; i--) {
+      var j = Math.floor(Math.random()*(i+1));
+      var t = a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function shuffleOptions(item) {
+    if (item.type !== 'mc') return item;
+    if (!item.shuffle_opts) return item;
+    var bundle = item.opts.map(function(txt, i){ return { text: txt, isCorrect: (i === item.correct) }; });
+    var mixed = shuffle(bundle);
+    var newCorrect = -1;
+    for (var k=0; k<mixed.length; k++){ if (mixed[k].isCorrect){ newCorrect = k; break; } }
+    return { type:'mc', q:item.q, opts:mixed.map(function(x){return x.text;}), correct:newCorrect, shuffle_opts:true };
+  }
+
+  function pickSet() {
+    var base = shuffle(ALL).slice(0, Math.min(MAX_PER_RUN, ALL.length));
+    var out = [];
+    for (var i=0;i<base.length;i++) out.push(shuffleOptions(base[i]));
+    return out;
+  }
+
+  var CURRENT = { items: pickSet(), finished:false };
+
+  function letterFor(idx){ return String.fromCharCode(0x410 + idx); } // А,Б,В...
+
+  function render() {
+    var quizEl = document.getElementById('quiz');
+    var progress = document.getElementById('progress');
+    quizEl.innerHTML = '';
+    progress.textContent = 'Питања: ' + CURRENT.items.length + ' / ' + ALL.length;
+
+    for (var idx=0; idx<CURRENT.items.length; idx++) {
+      var it = CURRENT.items[idx];
+      var card = document.createElement('div'); card.className='card';
+      var h = document.createElement('h3'); h.className='q-h'; h.innerHTML = (idx+1) + '. ' + it.q;
+      card.appendChild(h);
+
+      var opts = document.createElement('div'); opts.className='options';
+
+      if (it.type === 'tf') {
+        var tf = [{txt:'Тачно', val:'true'}, {txt:'Нетачно', val:'false'}];
+        for (var o=0;o<2;o++) {
+          var id = 'q'+idx+'_o'+o;
+          var label = document.createElement('label'); label.className='opt'; label.setAttribute('for', id);
+          var input = document.createElement('input'); input.type='radio'; input.name='q'+idx; input.id=id; input.value=tf[o].val;
+          var txt = document.createElement('div'); txt.className='opt-text'; txt.textContent=tf[o].txt;
+          label.appendChild(input); label.appendChild(txt);
+          opts.appendChild(label);
+        }
+      } else {
+        for (var o=0; o<it.opts.length; o++) {
+          var id = 'q'+idx+'_o'+o;
+          var label = document.createElement('label'); label.className='opt'; label.setAttribute('for', id);
+          var input = document.createElement('input'); input.type='radio'; input.name='q'+idx; input.id=id; input.value=String(o);
+          var txt = document.createElement('div'); txt.className='opt-text';
+          txt.innerHTML = '<span class="muted ans">' + letterFor(o) + ')</span> ' + it.opts[o];
+          label.appendChild(input); label.appendChild(txt);
+          opts.appendChild(label);
+        }
+      }
+
+      card.appendChild(opts);
+      quizEl.appendChild(card);
+    }
+
+    document.getElementById('score').textContent = 'Резултат: —';
+    CURRENT.finished=false;
+
+    if (window.MathJax) { MathJax.typesetPromise(); }
+  }
+
+  function grade() {
+    if (CURRENT.finished) return;
+    var correct = 0;
+    var cards = document.querySelectorAll('#quiz .card');
+
+    for (var i=0; i<CURRENT.items.length; i++) {
+      var it = CURRENT.items[i];
+      var card = cards[i];
+      var labels = card.querySelectorAll('label.opt');
+
+      if (it.type === 'tf') {
+        var radios = card.querySelectorAll('input[name="q'+i+'"]');
+        var chosen = '';
+        for (var r=0;r<radios.length;r++) if (radios[r].checked) { chosen = radios[r].value; break; }
+        var ok = (chosen === String(it.correct));
+        if (ok) correct++;
+        for (var k=0;k<labels.length;k++) {
+          var val = radios[k].value;
+          if (val === String(it.correct)) labels[k].className = 'opt correct';
+          else if (val === chosen && !ok) labels[k].className = 'opt wrong';
+          radios[k].disabled = true;
+        }
+      } else {
+        var radios = card.querySelectorAll('input[name="q'+i+'"]');
+        var chosenIdx = -1;
+        for (var r=0;r<radios.length;r++) if (radios[r].checked) { chosenIdx = parseInt(radios[r].value,10); break; }
+        for (var k=0;k<labels.length;k++) labels[k].className='opt';
+        if (chosenIdx === it.correct) {
+          correct++;
+          if (labels[chosenIdx]) labels[chosenIdx].className='opt correct';
+        } else if (chosenIdx !== -1) {
+          if (labels[chosenIdx]) labels[chosenIdx].className='opt wrong';
+          if (labels[it.correct]) labels[it.correct].className='opt correct';
+        } else {
+          if (labels[it.correct]) labels[it.correct].className='opt correct';
+        }
+        for (var r=0;r<radios.length;r++) radios[r].disabled = true;
+      }
+    }
+
+    document.getElementById('score').textContent = 'Резултат: ' + correct + ' / ' + CURRENT.items.length;
+    CURRENT.finished = true;
+    window.scrollTo(0,0);
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', grade);
+  document.getElementById('retryBtn').addEventListener('click', function(){
+    CURRENT.items = pickSet();
+    render();
+    window.scrollTo(0,0);
+  });
+
+  render();
+});
+</script>
+</body>
+</html>
